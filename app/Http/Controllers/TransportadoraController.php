@@ -8,7 +8,7 @@ require_once "SimpleXLSX.php";
 use Response;
 use App\Models\Transportadora;
 use Illuminate\Http\Request;
-use Shuchkin\SimpleXLSX;
+use Illuminate\Support\Facades\DB;
 
 class TransportadoraController extends Controller
 {
@@ -35,18 +35,20 @@ class TransportadoraController extends Controller
                 $cep = explode(';', $valor[0]);
                 $peso = explode(';', $valor[1]);
                 
-                $arrayCusto = [
+                $arrayCusto[] = [
                     "from_postcode" => trim($cep[0]),
                     "to_postcode" => trim($cep[1]),
                     "from_weight" => $this->moeda(trim($peso[0])),
-                    "to_weight" => $this->moeda(trim($peso[2])),
-                    "cost" => $this->moeda(trim($valor[4]))
+                    "to_weight" => $this->moeda(trim($peso[1])),
+                    "cost" => $this->moeda(trim($valor[3])),
+                    "created_at" => date("Y-m-d H:i:s"),
                 ];
-            endif;
-            dd($arrayCusto);
+            endif;            
         endforeach;
 
-        DB::table('table')->insert($arrayCusto);
+        DB::table('shipping_cost')->truncate();
+        DB::table('shipping_cost')->insert($arrayCusto);
+        return response()->json(['success' => 'Dados salvos com Sucesso!']);
     }
 
     public static function moeda($get_valor) {
